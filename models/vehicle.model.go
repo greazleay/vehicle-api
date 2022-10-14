@@ -1,6 +1,6 @@
 package models
 
-import "gorm.io/gorm"
+import "github.com/google/uuid"
 
 type Engine struct {
 	Cylinder   int
@@ -9,10 +9,9 @@ type Engine struct {
 }
 
 type Vehicle struct {
-	gorm.Model
-
-	Make         string
-	VModel       string
+	Base
+	MakerID      uuid.UUID
+	Model        string
 	Category     string
 	Year         int
 	NumberOfSeat int
@@ -20,8 +19,8 @@ type Vehicle struct {
 	Engine       Engine `gorm:"embedded"`
 }
 
-type Maanufacturer struct {
-	gorm.Model
-
-	Name string
+type Maker struct {
+	Base
+	Name     string
+	Vehicles []Vehicle
 }

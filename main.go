@@ -1,9 +1,8 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/greazleay/vehicle-api/controllers"
 	"github.com/greazleay/vehicle-api/initializers"
 )
 
@@ -16,11 +15,12 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": "Hello Visitor, Welcome to Vehicle API",
-		})
-	})
+	router.GET("/", controllers.Index)
+	router.POST("/makers", controllers.CreateMaker)
+	router.GET("/makers", controllers.GetAllMakers)
+	router.GET("/makers/:id", controllers.GetMakerByID)
+	router.PATCH("/makers/:id", controllers.UpdateMaker)
+	router.DELETE("/makers/:id", controllers.DeleteMaker)
 
 	router.Run()
 }
