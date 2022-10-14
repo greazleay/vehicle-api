@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greazleay/vehicle-api/initializers"
-	"github.com/greazleay/vehicle-api/models"
+	"github.com/greazleay/vehicle-api/src/initializers"
+	"github.com/greazleay/vehicle-api/src/models"
 )
 
 func CreateMaker(ctx *gin.Context) {
