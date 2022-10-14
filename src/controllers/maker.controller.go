@@ -4,91 +4,171 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greazleay/vehicle-api/src/dtos"
 	"github.com/greazleay/vehicle-api/src/initializers"
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
-func CreateMaker(ctx *gin.Context) {
+func CreateMaker(context *gin.Context) {
 
-	var body struct {
-		Name string
-	}
+	// Validate Request Body
+	body := dtos.CreateMaker{}
+	var err = context.BindJSON(&body)
 
-	ctx.Bind(&body)
-
-	maker := models.Maker{Name: body.Name}
-
-	result := initializers.DB.Create(&maker)
-
-	if result.Error != nil {
-		ctx.Status(400)
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error":      err.Error(),
+			"name":       "ValidationException",
+			"status":     "failure",
+			"statusCode": 400,
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{
-		"status":  "success",
-		"message": "Maker Created",
-		"maker":   maker,
+	// Check if Maker with specified name already exists
+	var makerExists models.Maker
+	isError := initializers.DB.First(&makerExists, "name = ?", body.Name).Error
+
+	if isError == nil {
+
+		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
+			"error":      "Maker with name: " + body.Name + " already exists",
+			"name":       "ConflictException",
+			"status":     "failed",
+			"statusCode": 409,
+		})
+		return
+	}
+
+	// Create new Maker
+	newMaker := models.Maker{Name: body.Name}
+
+	result := initializers.DB.Create(&newMaker)
+
+	if result.Error != nil {
+		context.Status(400)
+		return
+	}
+
+	context.JSON(http.StatusCreated, gin.H{
+		"status":     "success",
+		"statusCode": 201,
+		"message":    "Maker Created",
+		"data":       newMaker,
 	})
 }
 
-func GetAllMakers(ctx *gin.Context) {
+func GetAllMakers(context *gin.Context) {
 
 	var makers []models.Maker
 	initializers.DB.Find(&makers)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "All Makers",
-		"data":    makers,
+	context.JSON(http.StatusOK, gin.H{
+		"status":     "success",
+		"statusCode": 200,
+		"message":    "All Makers",
+		"data":       makers,
 	})
 }
 
-func GetMakerByID(ctx *gin.Context) {
+func GetMakerByID(context *gin.Context) {
 
-	id := ctx.Param("id")
+	id := context.Param("id")
 
 	var maker models.Maker
-	initializers.DB.First(&maker, "id = ?", id)
+	result := initializers.DB.First(&maker, "id = ?", id)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "Maker",
-		"data":    maker,
-	})
-}
+	if result.Error != nil {
 
-func UpdateMaker(ctx *gin.Context) {
-
-	var body struct {
-		Name string
+		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"status":     "failure",
+			"statusCode": 404,
+			"name":       "NotFoundException",
+			"error":      result.Error.Error(),
+		})
+		return
 	}
 
-	ctx.Bind(&body)
+	context.JSON(http.StatusOK, gin.H{
+		"status":     "success",
+		"statusCode": 200,
+		"message":    "Maker",
+		"data":       maker,
+	})
+}
 
-	id := ctx.Param("id")
+func UpdateMaker(context *gin.Context) {
+
+	// Validate Request Body
+	body := dtos.CreateMaker{}
+	var err = context.BindJSON(&body)
+
+	if err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error":      err.Error(),
+			"name":       "ValidationException",
+			"status":     "failure",
+			"statusCode": 400,
+		})
+		return
+	}
+
+	// Check if Maker with specified name already exists
+	var makerExists models.Maker
+	isError := initializers.DB.First(&makerExists, "name = ?", body.Name).Error
+
+	if isError == nil {
+
+		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
+			"error":      "Maker with name: " + body.Name + " already exists",
+			"name":       "ConflictException",
+			"status":     "failed",
+			"statusCode": 409,
+		})
+		return
+	}
+
+	id := context.Param("id")
 
 	var maker models.Maker
-	initializers.DB.First(&maker, "id = ?", id)
+	result := initializers.DB.First(&maker, "id = ?", id)
+
+	if result.Error != nil {
+
+		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"status":     "failure",
+			"statusCode": 404,
+			"name":       "NotFoundException",
+			"error":      result.Error.Error(),
+		})
+		return
+	}
 
 	initializers.DB.Model(&maker).Updates(models.Maker{Name: body.Name})
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "Maker",
-		"data":    maker,
+	context.JSON(http.StatusOK, gin.H{
+		"status":     "success",
+		"statusCode": 200,
+		"message":    "Maker Updated",
+		"data":       maker,
 	})
 
 }
 
-func DeleteMaker(ctx *gin.Context) {
+func DeleteMaker(context *gin.Context) {
 
-	id := ctx.Param("id")
+	id := context.Param("id")
 
-	initializers.DB.Delete(&models.Maker{}, "id = ?", id)
+	result := initializers.DB.Delete(&models.Maker{}, "id = ?", id)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"status":  "success",
-		"message": "Maker Deleted",
+	if result.Error != nil {
+		context.Status(400)
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"status":     "success",
+		"statusCode": 200,
+		"message":    "Maker Deleted",
 	})
 }

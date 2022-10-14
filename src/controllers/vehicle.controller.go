@@ -8,7 +8,7 @@ import (
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
-func CreateVehicle(ctx *gin.Context) {
+func CreateVehicle(context *gin.Context) {
 
 	var body struct {
 		Model        string
@@ -19,7 +19,7 @@ func CreateVehicle(ctx *gin.Context) {
 		Engine       *models.Engine
 	}
 
-	ctx.Bind(&body)
+	context.Bind(&body)
 
 	maker := models.Vehicle{
 		Model:        body.Model,
@@ -33,11 +33,11 @@ func CreateVehicle(ctx *gin.Context) {
 	result := initializers.DB.Create(&maker)
 
 	if result.Error != nil {
-		ctx.Status(400)
+		context.Status(400)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{
+	context.JSON(http.StatusCreated, gin.H{
 		"status":  "success",
 		"message": "Maker Created",
 		"maker":   maker,
