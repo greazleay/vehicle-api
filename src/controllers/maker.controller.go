@@ -73,10 +73,21 @@ func GetAllMakers(context *gin.Context) {
 
 func GetMakerByID(context *gin.Context) {
 
-	id := context.Param("id")
+	// Validate Request Params
+	params := dtos.EntityID{}
+
+	if err := context.BindUri(&params); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"statusText": "failure",
+			"statusCode": 400,
+			"errorType":  "ValidationException",
+			"error":      err.Error(),
+		})
+		return
+	}
 
 	var maker models.Maker
-	result := config.DB.First(&maker, "id = ?", id)
+	result := config.DB.First(&maker, "id = ?", params.ID)
 
 	if result.Error != nil {
 
@@ -101,9 +112,21 @@ func UpdateMaker(context *gin.Context) {
 
 	// Validate Request Body
 	body := dtos.CreateMaker{}
-	var err = context.BindJSON(&body)
 
-	if err != nil {
+	if err := context.BindJSON(&body); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"statusText": "failure",
+			"statusCode": 400,
+			"errorType":  "ValidationException",
+			"error":      err.Error(),
+		})
+		return
+	}
+
+	// Validate Request Params
+	params := dtos.EntityID{}
+
+	if err := context.BindUri(&params); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
 			"statusCode": 400,
@@ -115,9 +138,8 @@ func UpdateMaker(context *gin.Context) {
 
 	// Check if Maker with specified name already exists
 	var makerExists models.Maker
-	isError := config.DB.First(&makerExists, "name = ?", body.Name).Error
 
-	if isError == nil {
+	if err := config.DB.First(&makerExists, "name = ?", body.Name).Error; err == nil {
 
 		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
 			"statusText": "failed",
@@ -128,10 +150,8 @@ func UpdateMaker(context *gin.Context) {
 		return
 	}
 
-	id := context.Param("id")
-
 	var maker models.Maker
-	result := config.DB.First(&maker, "id = ?", id)
+	result := config.DB.First(&maker, "id = ?", params.ID)
 
 	if result.Error != nil {
 
@@ -157,9 +177,20 @@ func UpdateMaker(context *gin.Context) {
 
 func DeleteMaker(context *gin.Context) {
 
-	id := context.Param("id")
+	// Validate Request Params
+	params := dtos.EntityID{}
 
-	result := config.DB.Delete(&models.Maker{}, "id = ?", id)
+	if err := context.BindUri(&params); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"statusText": "failure",
+			"statusCode": 400,
+			"errorType":  "ValidationException",
+			"error":      err.Error(),
+		})
+		return
+	}
+
+	result := config.DB.Delete(&models.Maker{}, "id = ?", params.ID)
 
 	if result.Error != nil {
 		context.Status(400)
