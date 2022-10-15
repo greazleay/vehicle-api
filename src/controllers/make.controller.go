@@ -9,13 +9,12 @@ import (
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
-func CreateMaker(context *gin.Context) {
+func CreateMake(context *gin.Context) {
 
 	// Validate Request Body
-	body := dtos.CreateMaker{}
-	var err = context.BindJSON(&body)
+	body := dtos.CreateMake{}
 
-	if err != nil {
+	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
 			"statusCode": 400,
@@ -25,25 +24,24 @@ func CreateMaker(context *gin.Context) {
 		return
 	}
 
-	// Check if Maker with specified name already exists
-	var makerExists models.Maker
-	isError := config.DB.First(&makerExists, "name = ?", body.Name).Error
+	// Check if Make with specified name already exists
+	var makeExists models.Make
 
-	if isError == nil {
+	if err := config.DB.First(&makeExists, "name = ?", body.Name).Error; err == nil {
 
 		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
 			"statusText": "failed",
 			"statusCode": 409,
 			"errorType":  "ConflictException",
-			"error":      "Maker with name: " + body.Name + " already exists",
+			"error":      "Make with name: " + body.Name + " already exists",
 		})
 		return
 	}
 
-	// Create new Maker
-	newMaker := models.Maker{Name: body.Name}
+	// Create new Make
+	newMake := models.Make{Name: body.Name}
 
-	result := config.DB.Create(&newMaker)
+	result := config.DB.Create(&newMake)
 
 	if result.Error != nil {
 		context.Status(400)
@@ -53,25 +51,25 @@ func CreateMaker(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{
 		"statusText": "success",
 		"statusCode": 201,
-		"message":    "Maker Created",
-		"data":       newMaker,
+		"message":    "Make Created",
+		"data":       newMake,
 	})
 }
 
-func GetAllMakers(context *gin.Context) {
+func GetAllMakes(context *gin.Context) {
 
-	var makers []models.Maker
-	config.DB.Find(&makers)
+	var makes []models.Make
+	config.DB.Find(&makes)
 
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
 		"statusCode": 200,
-		"message":    "All Makers",
-		"data":       makers,
+		"message":    "All Makes",
+		"data":       makes,
 	})
 }
 
-func GetMakerByID(context *gin.Context) {
+func GetMakeByID(context *gin.Context) {
 
 	// Validate Request Params
 	params := dtos.EntityID{}
@@ -86,8 +84,8 @@ func GetMakerByID(context *gin.Context) {
 		return
 	}
 
-	var maker models.Maker
-	result := config.DB.First(&maker, "id = ?", params.ID)
+	var make models.Make
+	result := config.DB.First(&make, "id = ?", params.ID)
 
 	if result.Error != nil {
 
@@ -103,15 +101,15 @@ func GetMakerByID(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{
 		"status":     "success",
 		"statusCode": 200,
-		"message":    "Maker",
-		"data":       maker,
+		"message":    "Make with ID: " + params.ID,
+		"data":       make,
 	})
 }
 
-func UpdateMaker(context *gin.Context) {
+func UpdateMake(context *gin.Context) {
 
 	// Validate Request Body
-	body := dtos.CreateMaker{}
+	body := dtos.CreateMake{}
 
 	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -136,22 +134,22 @@ func UpdateMaker(context *gin.Context) {
 		return
 	}
 
-	// Check if Maker with specified name already exists
-	var makerExists models.Maker
+	// Check if Make with specified name already exists
+	var makeExists models.Make
 
-	if err := config.DB.First(&makerExists, "name = ?", body.Name).Error; err == nil {
+	if err := config.DB.First(&makeExists, "name = ?", body.Name).Error; err == nil {
 
 		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
 			"statusText": "failed",
 			"statusCode": 409,
 			"errorType":  "ConflictException",
-			"error":      "Maker with name: " + body.Name + " already exists",
+			"error":      "Make with name: " + body.Name + " already exists",
 		})
 		return
 	}
 
-	var maker models.Maker
-	result := config.DB.First(&maker, "id = ?", params.ID)
+	var make models.Make
+	result := config.DB.First(&make, "id = ?", params.ID)
 
 	if result.Error != nil {
 
@@ -164,18 +162,18 @@ func UpdateMaker(context *gin.Context) {
 		return
 	}
 
-	config.DB.Model(&maker).Updates(models.Maker{Name: body.Name})
+	config.DB.Model(&make).Updates(models.Make{Name: body.Name})
 
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
 		"statusCode": 200,
-		"message":    "Maker Updated",
-		"data":       maker,
+		"message":    "Make Updated",
+		"data":       make,
 	})
 
 }
 
-func DeleteMaker(context *gin.Context) {
+func DeleteMake(context *gin.Context) {
 
 	// Validate Request Params
 	params := dtos.EntityID{}
@@ -190,7 +188,7 @@ func DeleteMaker(context *gin.Context) {
 		return
 	}
 
-	result := config.DB.Delete(&models.Maker{}, "id = ?", params.ID)
+	result := config.DB.Delete(&models.Make{}, "id = ?", params.ID)
 
 	if result.Error != nil {
 		context.Status(400)
@@ -200,6 +198,6 @@ func DeleteMaker(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
 		"statusCode": 200,
-		"message":    "Maker Deleted",
+		"message":    "Make Deleted",
 	})
 }

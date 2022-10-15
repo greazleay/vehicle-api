@@ -10,7 +10,7 @@ type Engine struct {
 
 type Vehicle struct {
 	Base
-	MakerID      uuid.UUID
+	MakeID       uuid.UUID
 	Model        string
 	Category     string
 	Year         int
@@ -19,7 +19,7 @@ type Vehicle struct {
 	Engine       Engine `gorm:"embedded"`
 }
 
-type Maker struct {
+type Make struct {
 	Base
 	Name     string
 	Vehicles []Vehicle

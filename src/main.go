@@ -17,13 +17,13 @@ func main() {
 
 	router.GET("/", controllers.Index)
 
-	makerRouter := router.Group("/v1/makers")
+	makeRouter := router.Group("/v1/makes")
 
-	makerRouter.POST("/", controllers.CreateMaker)
-	makerRouter.GET("/", controllers.GetAllMakers)
-	makerRouter.GET("/:id", controllers.GetMakerByID)
-	makerRouter.PATCH("/:id", controllers.UpdateMaker)
-	makerRouter.DELETE("/:id", controllers.DeleteMaker)
+	makeRouter.POST("/", controllers.CreateMake)
+	makeRouter.GET("/", controllers.GetAllMakes)
+	makeRouter.GET("/:id", controllers.GetMakeByID)
+	makeRouter.PATCH("/:id", controllers.UpdateMake)
+	makeRouter.DELETE("/:id", controllers.DeleteMake)
 
 	vehicleRouter := router.Group("/v1/vehicles")
 

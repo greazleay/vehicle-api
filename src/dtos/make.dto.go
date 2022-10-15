@@ -1,5 +1,5 @@
 package dtos
 
-type CreateMaker struct {
+type CreateMake struct {
 	Name string `json:"name" binding:"required"`
 }
