@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/controllers"
-	"github.com/greazleay/vehicle-api/src/initializers"
 )
 
 func init() {
-	initializers.LoadEnvVariables()
-	initializers.ConnectToDB()
+	config.LoadEnvVariables()
+	config.ConnectToDB()
 }
 
 func main() {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/greazleay/vehicle-api/src/initializers"
+	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
@@ -30,7 +30,7 @@ func CreateVehicle(context *gin.Context) {
 		Engine:       *body.Engine,
 	}
 
-	result := initializers.DB.Create(&maker)
+	result := config.DB.Create(&maker)
 
 	if result.Error != nil {
 		context.Status(400)
@@ -38,8 +38,9 @@ func CreateVehicle(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusCreated, gin.H{
-		"status":  "success",
-		"message": "Maker Created",
-		"maker":   maker,
+		"statusCode": 201,
+		"statusText": "success",
+		"message":    "Vehicle Created",
+		"maker":      maker,
 	})
 }
