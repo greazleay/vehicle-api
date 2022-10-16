@@ -10,7 +10,7 @@ type Engine struct {
 
 type Vehicle struct {
 	Base
-	MakeID       uuid.UUID
+	MakeID       uuid.UUID `gorm:"index"`
 	Model        string
 	Category     string
 	Year         int

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/greazleay/vehicle-api/src/config"
-	"github.com/greazleay/vehicle-api/src/controllers"
+	"github.com/greazleay/vehicle-api/src/routes"
 )
 
 func init() {
@@ -15,19 +15,11 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/", controllers.Index)
+	routes.IndexRoutes(router)
 
-	makeRouter := router.Group("/v1/makes")
+	routes.MakeRoutes(router)
 
-	makeRouter.POST("/", controllers.CreateMake)
-	makeRouter.GET("/", controllers.GetAllMakes)
-	makeRouter.GET("/:id", controllers.GetMakeByID)
-	makeRouter.PATCH("/:id", controllers.UpdateMake)
-	makeRouter.DELETE("/:id", controllers.DeleteMake)
-
-	vehicleRouter := router.Group("/v1/vehicles")
-
-	vehicleRouter.POST("/", controllers.CreateVehicle)
+	routes.VehicleRoutes(router)
 
 	router.Run()
 }
