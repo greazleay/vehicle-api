@@ -39,7 +39,7 @@ func CreateMake(context *gin.Context) {
 	}
 
 	// Create new Make
-	newMake := models.Make{Name: body.Name}
+	newMake := models.Make{Name: body.Name, Country: body.Country}
 
 	result := config.DB.Create(&newMake)
 
@@ -85,15 +85,13 @@ func GetMakeByID(context *gin.Context) {
 	}
 
 	var make models.Make
-	result := config.DB.First(&make, "id = ?", params.ID)
-
-	if result.Error != nil {
+	if err := config.DB.First(&make, "id = ?", params.ID).Error; err != nil {
 
 		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"statusText": "failure",
 			"statusCode": 404,
 			"errorType":  "NotFoundException",
-			"error":      result.Error.Error(),
+			"error":      err.Error(),
 		})
 		return
 	}
@@ -110,7 +108,6 @@ func UpdateMake(context *gin.Context) {
 
 	// Validate Request Body
 	body := dtos.CreateMake{}
-
 	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
@@ -123,7 +120,6 @@ func UpdateMake(context *gin.Context) {
 
 	// Validate Request Params
 	params := dtos.EntityID{}
-
 	if err := context.BindUri(&params); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
@@ -136,8 +132,7 @@ func UpdateMake(context *gin.Context) {
 
 	// Check if Make with specified name already exists
 	var makeExists models.Make
-
-	if err := config.DB.First(&makeExists, "name = ?", body.Name).Error; err == nil {
+	if err := config.DB.Where("name = ?", body.Name).Not("id = ?", params.ID).First(&makeExists).Error; err == nil {
 
 		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
 			"statusText": "failed",
@@ -162,7 +157,7 @@ func UpdateMake(context *gin.Context) {
 		return
 	}
 
-	config.DB.Model(&make).Updates(models.Make{Name: body.Name})
+	config.DB.Model(&make).Updates(models.Make{Name: body.Name, Country: body.Country})
 
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
