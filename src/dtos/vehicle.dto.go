@@ -2,7 +2,7 @@ package dtos
 
 import "github.com/google/uuid"
 
-type CreateVehicle struct {
+type CreateVehicleDto struct {
 	Model         string    `json:"model" binding:"required"`
 	MakeID        uuid.UUID `json:"makeId" binding:"required"`
 	Category      string    `json:"category" binding:"required"`

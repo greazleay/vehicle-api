@@ -1,6 +1,6 @@
 package dtos
 
-type CreateMake struct {
+type CreateMakeDto struct {
 	Name    string `json:"name" binding:"required"`
 	Country string `json:"country" binding:"required"`
 }

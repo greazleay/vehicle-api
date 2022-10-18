@@ -12,7 +12,7 @@ import (
 func CreateVehicle(context *gin.Context) {
 
 	// Validate Request Body
-	body := dtos.CreateVehicle{}
+	body := dtos.CreateVehicleDto{}
 
 	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{

@@ -7,12 +7,13 @@ import (
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
 	"github.com/greazleay/vehicle-api/src/models"
+	"gorm.io/gorm"
 )
 
 func CreateMake(context *gin.Context) {
 
 	// Validate Request Body
-	body := dtos.CreateMake{}
+	body := dtos.CreateMakeDto{}
 
 	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -85,7 +86,9 @@ func GetMakeByID(context *gin.Context) {
 	}
 
 	var make models.Make
-	if err := config.DB.First(&make, "id = ?", params.ID).Error; err != nil {
+	if err := config.DB.Preload("Vehicles", func(db *gorm.DB) *gorm.DB {
+		return db.Select("MakeID", "Model")
+	}).First(&make, "id = ?", params.ID).Error; err != nil {
 
 		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
 			"statusText": "failure",
@@ -107,7 +110,7 @@ func GetMakeByID(context *gin.Context) {
 func UpdateMake(context *gin.Context) {
 
 	// Validate Request Body
-	body := dtos.CreateMake{}
+	body := dtos.CreateMakeDto{}
 	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
