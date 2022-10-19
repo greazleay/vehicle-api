@@ -21,5 +21,9 @@ func main() {
 
 	routes.VehicleRoutes(router)
 
+	routes.UserRoutes(router)
+
+	routes.AuthRoutes((router))
+
 	router.Run()
 }

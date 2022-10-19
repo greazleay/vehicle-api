@@ -231,7 +231,6 @@ func UpdateMake(context *gin.Context) {
 		"message":    "Make Updated",
 		"data":       make,
 	})
-
 }
 
 func DeleteMake(context *gin.Context) {

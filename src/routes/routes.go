@@ -39,3 +39,25 @@ func VehicleRoutes(router *gin.Engine) {
 	}
 
 }
+
+func UserRoutes(router *gin.Engine) {
+
+	userRouter := router.Group("/v1/users")
+
+	{
+		userRouter.POST("/", controllers.CreateUser)
+		userRouter.GET("/", controllers.GetAllUsers)
+		userRouter.GET("/:id", controllers.GetUserByID)
+		userRouter.PATCH("/:id", controllers.UpdateUser)
+		userRouter.DELETE("/:id", controllers.DeleteUser)
+	}
+}
+
+func AuthRoutes(router *gin.Engine) {
+
+	authRouter := router.Group("/v1/auth")
+
+	{
+		authRouter.POST("/login", controllers.LoginUser)
+	}
+}
