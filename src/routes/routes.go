@@ -16,6 +16,8 @@ func MakeRoutes(router *gin.Engine) {
 	{
 		makeRouter.POST("/", controllers.CreateMake)
 		makeRouter.GET("/", controllers.GetAllMakes)
+		makeRouter.GET("/names", controllers.GetMakeByName)
+		makeRouter.GET("/countries", controllers.GetMakesByCountry)
 		makeRouter.GET("/:id", controllers.GetMakeByID)
 		makeRouter.PATCH("/:id", controllers.UpdateMake)
 		makeRouter.DELETE("/:id", controllers.DeleteMake)
@@ -29,6 +31,11 @@ func VehicleRoutes(router *gin.Engine) {
 
 	{
 		vehicleRouter.POST("/", controllers.CreateVehicle)
+		vehicleRouter.GET("/", controllers.GetAllVehicles)
+		vehicleRouter.GET("/models", controllers.GetVehicleByModel)
+		vehicleRouter.GET("/:id", controllers.GetVehicleByID)
+		vehicleRouter.PATCH("/:id", controllers.UpdateVehicle)
+		vehicleRouter.DELETE("/:id", controllers.DeleteVehicle)
 	}
 
 }

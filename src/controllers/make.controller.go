@@ -107,11 +107,12 @@ func GetMakeByID(context *gin.Context) {
 	})
 }
 
-func UpdateMake(context *gin.Context) {
+func GetMakeByName(context *gin.Context) {
 
-	// Validate Request Body
-	body := dtos.CreateMakeDto{}
-	if err := context.BindJSON(&body); err != nil {
+	// Validate Request Query
+	query := dtos.MakeNameDto{}
+
+	if err := context.BindQuery(&query); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
 			"statusCode": 400,
@@ -121,9 +122,71 @@ func UpdateMake(context *gin.Context) {
 		return
 	}
 
+	var make models.Make
+	if err := config.DB.Preload("Vehicles", func(db *gorm.DB) *gorm.DB {
+		return db.Select("MakeID", "Model")
+	}).First(&make, "name = ?", query.Name).Error; err != nil {
+
+		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"statusText": "failure",
+			"statusCode": 404,
+			"errorType":  "NotFoundException",
+			"error":      err.Error(),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"status":     "success",
+		"statusCode": 200,
+		"message":    "Make with Name: " + query.Name,
+		"data":       make,
+	})
+}
+
+func GetMakesByCountry(context *gin.Context) {
+
+	// Validate Request Query
+	query := dtos.MakeCountryDto{}
+
+	if err := context.BindQuery(&query); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"statusText": "failure",
+			"statusCode": 400,
+			"errorType":  "ValidationException",
+			"error":      err.Error(),
+		})
+		return
+	}
+
+	var makes []models.Make
+	config.DB.Where("country = ?", query.Country).Find(&makes)
+
+	context.JSON(http.StatusOK, gin.H{
+		"status":     "success",
+		"statusCode": 200,
+		"message":    "Makes with Country: " + query.Country,
+		"data":       makes,
+	})
+}
+
+func UpdateMake(context *gin.Context) {
+
 	// Validate Request Params
 	params := dtos.EntityID{}
 	if err := context.BindUri(&params); err != nil {
+		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"statusText": "failure",
+			"statusCode": 400,
+			"errorType":  "ValidationException",
+			"error":      err.Error(),
+		})
+		return
+	}
+
+	// Validate Request Body
+	body := dtos.CreateMakeDto{}
+	if err := context.BindJSON(&body); err != nil {
 		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"statusText": "failure",
 			"statusCode": 400,

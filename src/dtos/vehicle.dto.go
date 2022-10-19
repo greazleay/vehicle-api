@@ -2,6 +2,7 @@ package dtos
 
 import "github.com/google/uuid"
 
+// json used to bind request body
 type CreateVehicleDto struct {
 	Model         string    `json:"model" binding:"required"`
 	MakeID        uuid.UUID `json:"makeId" binding:"required"`
@@ -16,4 +17,9 @@ type CreateVehicleDto struct {
 	TopSpeed      string    `json:"topSpeed" binding:"required"`
 	Acceleration  string    `json:"acceleration" binding:"required"`
 	Transmission  int       `json:"transmission" binding:"required"`
+}
+
+// form used to bind request query
+type VehicleModelDto struct {
+	Model string `form:"model" binding:"required"`
 }
