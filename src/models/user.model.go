@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/greazleay/vehicle-api/src/config"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -35,6 +36,10 @@ func (user *User) ValidatePassword(providedPassword string) error {
 	if err != nil {
 		return err
 	}
+
+	user.LastLogin = time.Now()
+
+	config.DB.Save(&user)
 
 	return nil
 }

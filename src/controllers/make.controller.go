@@ -160,7 +160,16 @@ func GetMakesByCountry(context *gin.Context) {
 	}
 
 	var makes []models.Make
-	config.DB.Where("country = ?", query.Country).Find(&makes)
+	if foundMakes := config.DB.Where("country = ?", query.Country).Find(&makes).RowsAffected; foundMakes == 0 {
+
+		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"statusText": "failure",
+			"statusCode": 404,
+			"errorType":  "NotFoundException",
+			"error":      "No Makes for specified Country",
+		})
+		return
+	}
 
 	context.JSON(http.StatusOK, gin.H{
 		"status":     "success",

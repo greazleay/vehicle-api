@@ -64,7 +64,7 @@ func CreateUser(context *gin.Context) {
 func GetAllUsers(context *gin.Context) {
 
 	var users []models.User
-	config.DB.Select("id", "email", "first_name", "last_name", "last_login", "created_at").Find(&users)
+	config.DB.Select("id", "email", "first_name", "last_name", "last_login", "created_at", "updated_at").Find(&users)
 
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",

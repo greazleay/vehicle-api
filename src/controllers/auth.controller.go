@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
+	"github.com/greazleay/vehicle-api/src/middlewares/auth"
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
@@ -50,10 +51,15 @@ func LoginUser(context *gin.Context) {
 
 	}
 
+	tokenString, err := auth.GenerateJwt(userExists.ID)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
 		"statusCode": 200,
 		"message":    "Login Successful",
-		"data":       "token",
+		"data":       tokenString,
 	})
 }
