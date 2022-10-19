@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
-	"github.com/greazleay/vehicle-api/src/middlewares/auth"
 	"github.com/greazleay/vehicle-api/src/models"
+	"github.com/greazleay/vehicle-api/src/services/auth"
 )
 
 func LoginUser(context *gin.Context) {
@@ -30,10 +30,10 @@ func LoginUser(context *gin.Context) {
 
 	if err := config.DB.First(&userExists, "email = ?", body.Email).Error; err != nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"statusText": "failed",
 			"statusCode": 401,
-			"errorType":  "UnAuthorizedException",
+			"errorType":  "UnauthorizedException",
 			"error":      "Invalid Credentials",
 		})
 		return
@@ -41,25 +41,31 @@ func LoginUser(context *gin.Context) {
 
 	if invalidPasswordError := userExists.ValidatePassword(body.Password); invalidPasswordError != nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
+		context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"statusText": "failed",
 			"statusCode": 401,
-			"errorType":  "UnAuthorizedException",
+			"errorType":  "UnauthorizedException",
 			"error":      "Invalid Credentials",
 		})
 		return
 
 	}
 
-	tokenString, err := auth.GenerateJwt(userExists.ID)
+	accessToken, err := auth.GenerateJwt(userExists.ID)
 	if err != nil {
-		panic(err.Error())
+		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"statusText": "failed",
+			"statusCode": 500,
+			"errorType":  "InternalServerErrorException",
+			"error":      "Something Went Wrong",
+		})
+		return
 	}
 
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
 		"statusCode": 200,
 		"message":    "Login Successful",
-		"data":       tokenString,
+		"data":       accessToken,
 	})
 }
