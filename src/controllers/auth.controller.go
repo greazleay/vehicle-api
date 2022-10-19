@@ -38,6 +38,18 @@ func LoginUser(context *gin.Context) {
 		return
 	}
 
+	if invalidPasswordError := userExists.ValidatePassword(body.Password); invalidPasswordError != nil {
+
+		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
+			"statusText": "failed",
+			"statusCode": 401,
+			"errorType":  "UnAuthorizedException",
+			"error":      "Invalid Credentials",
+		})
+		return
+
+	}
+
 	context.JSON(http.StatusOK, gin.H{
 		"statusText": "success",
 		"statusCode": 200,

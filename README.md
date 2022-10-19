@@ -2,7 +2,7 @@
 
 ## About
 
-This is a simple API that holds information about vehicles
+This is a Simple CRUD API that manages information about Vehicles, with built-in Authentication protecting some routes.
 
 ## Authors
 
