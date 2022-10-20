@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
+	"github.com/greazleay/vehicle-api/src/exceptions"
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
@@ -15,12 +16,8 @@ func CreateUser(context *gin.Context) {
 	body := dtos.CreateUserDto{}
 
 	if err := context.BindJSON(&body); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -29,12 +26,7 @@ func CreateUser(context *gin.Context) {
 
 	if err := config.DB.First(&userExists, "email = ?", body.Email).Error; err == nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"statusText": "failed",
-			"statusCode": 409,
-			"errorType":  "ConflictException",
-			"error":      "User with email: " + body.Email + " already exists",
-		})
+		exceptions.HandleConflictException(context, "User with email: "+body.Email+" already exists")
 		return
 	}
 
@@ -49,7 +41,7 @@ func CreateUser(context *gin.Context) {
 	result := config.DB.Create(&newUser)
 
 	if result.Error != nil {
-		context.Status(400)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 
@@ -80,24 +72,14 @@ func GetUserByID(context *gin.Context) {
 	params := dtos.EntityID{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	var user models.User
 	if err := config.DB.First(&user, "id = ?", params.ID).Error; err != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleNotFoundException(context, err)
 		return
 	}
 
@@ -114,24 +96,14 @@ func UpdateUser(context *gin.Context) {
 	// Validate Request Params
 	params := dtos.EntityID{}
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	// Validate Request Body
 	body := dtos.UpdateUserDto{}
 	if err := context.BindJSON(&body); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -141,12 +113,7 @@ func UpdateUser(context *gin.Context) {
 
 	if result.Error != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      result.Error.Error(),
-		})
+		exceptions.HandleNotFoundException(context, result.Error)
 		return
 	}
 
@@ -170,19 +137,14 @@ func DeleteUser(context *gin.Context) {
 	params := dtos.EntityID{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	result := config.DB.Delete(&models.User{}, "id = ?", params.ID)
 
 	if result.Error != nil {
-		context.Status(400)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 

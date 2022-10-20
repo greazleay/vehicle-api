@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
+	"github.com/greazleay/vehicle-api/src/exceptions"
 	"github.com/greazleay/vehicle-api/src/models"
 )
 
@@ -15,12 +16,7 @@ func CreateVehicle(context *gin.Context) {
 	body := dtos.CreateVehicleDto{}
 
 	if err := context.BindJSON(&body); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -28,23 +24,13 @@ func CreateVehicle(context *gin.Context) {
 	var vehicleExists models.Vehicle
 	if err := config.DB.First(&vehicleExists, "model = ?", body.Model).Error; err == nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"statusText": "failed",
-			"statusCode": 409,
-			"errorType":  "ConflictException",
-			"error":      "Vehicle with model: " + body.Model + " already exists",
-		})
+		exceptions.HandleConflictException(context, "Vehicle with model: "+body.Model+" already exists")
 		return
 	}
 
 	var make models.Make
 	if err := config.DB.First(&make, "id = ?", body.MakeID).Error; err != nil {
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      err.Error() + ", Make with specified ID Not Found",
-		})
+		exceptions.HandleNotFoundException(context, err)
 		return
 	}
 
@@ -69,7 +55,7 @@ func CreateVehicle(context *gin.Context) {
 	result := config.DB.Create(&newVehicle)
 
 	if result.Error != nil {
-		context.Status(400)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 
@@ -100,24 +86,14 @@ func GetVehicleByID(context *gin.Context) {
 	params := dtos.EntityID{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	var vehicle models.Vehicle
 	if err := config.DB.Preload("Make").First(&vehicle, "id = ?", params.ID).Error; err != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleNotFoundException(context, err)
 		return
 	}
 
@@ -135,24 +111,14 @@ func GetVehicleByModel(context *gin.Context) {
 	params := dtos.VehicleModelDto{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	var vehicle models.Vehicle
 	if err := config.DB.Preload("Make").First(&vehicle, "model = ?", params.Model).Error; err != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleNotFoundException(context, err)
 		return
 	}
 
@@ -169,24 +135,14 @@ func UpdateVehicle(context *gin.Context) {
 	// Validate Request Params
 	params := dtos.EntityID{}
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	// Validate Request Body
 	body := dtos.CreateVehicleDto{}
 	if err := context.BindJSON(&body); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -194,12 +150,7 @@ func UpdateVehicle(context *gin.Context) {
 	var vehicleExists models.Vehicle
 	if err := config.DB.Where("model = ?", body.Model).Not("id = ?", params.ID).First(&vehicleExists).Error; err == nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"statusText": "failed",
-			"statusCode": 409,
-			"errorType":  "ConflictException",
-			"error":      "Vehicle with model: " + body.Model + " already exists",
-		})
+		exceptions.HandleConflictException(context, "Vehicle with model: "+body.Model+" already exists")
 		return
 	}
 
@@ -209,12 +160,7 @@ func UpdateVehicle(context *gin.Context) {
 
 	if result.Error != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      result.Error.Error(),
-		})
+		exceptions.HandleNotFoundException(context, result.Error)
 		return
 	}
 
@@ -248,19 +194,14 @@ func DeleteVehicle(context *gin.Context) {
 	params := dtos.EntityID{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	result := config.DB.Delete(&models.Vehicle{}, "id = ?", params.ID)
 
 	if result.Error != nil {
-		context.Status(400)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 

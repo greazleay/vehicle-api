@@ -2,7 +2,7 @@
 
 ## About
 
-This is a Simple CRUD API that manages information about Vehicles, with built-in Authentication protecting some routes.
+This is a Simple Go CRUD API that manages information about Vehicles, most routes are protected with JWT Authentication.
 
 ## Authors
 
@@ -15,17 +15,11 @@ This is a Simple CRUD API that manages information about Vehicles, with built-in
 * [Gin](https://gin-gonic.com/)
 * [PostgreSQL](https://www.postgresql.org/)
 * [GORM](https://gorm.io/)
-
-## Installation
-
-```bash
-  go get
-```
+* [JWT-Go](https://github.com/golang-jwt/jwt)
 
 ## Running the app
 
 ```bash
-# production
 $ go run src/main.go
 ```
 
@@ -63,29 +57,65 @@ Some of the available routes are listed below:
 | :-------- | :------- | :------------------------- |
 | `email` | `string` | **Required**. Valid Email Address|
 | `password` | `string` | **Required**. Password |
-| `fullName` | `string` | **Required**. User's full name |
+| `firstName` | `string` | **Required**. User's First name |
+| `lastName` | `string` | **Required**. User's Last name |
 
-##### Get User Info
+##### Get All Users
 
 ```http
-  GET /users/userinfo
+  GET /users
 ```
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `access_token`      | `string` | **Required**. Valid Access Token |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+
+##### Get User By ID
+
+```http
+  GET /users/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
+
+##### Update User
+
+```http
+  PATCH /users/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
+| `firstName` | `string` | **Required**. User's First name in Request Body|
+| `lastName` | `string` | **Required**. User's Last name in Request Body|
+
+##### Delete User
+
+```http
+  DELETE /users/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
 
 #### Make Routes
 
 ##### Create Make
 
 ```http
-  POST /accounts/open-account
+  POST /makes
 ```
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `access_token`      | `string` | **Required**. Valid Access Token |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
 | `name` | `string` | **Required**. Name of the Make in Request Body|
 | `country` | `string` | **Required**. Country of the Make in Request Body|
 
@@ -97,19 +127,76 @@ Some of the available routes are listed below:
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `access_token`      | `string` | **Required**. Valid Access Token |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+
+##### Get Make By ID
+
+```http
+  GET /makes/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
+
+##### Get Make By Name
+
+```http
+  GET /makes/names?name={name}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `name`      | `string` | **Required**. Make Name in Request Query|
+
+##### Get Make By Country
+
+```http
+  GET /makes/countries?country={country}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `country`      | `string` | **Required**. Make Country in Request Query|
+
+##### Update Make
+
+```http
+  PATCH /makes/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
+| `name` | `string` | **Required**. Make Name in Request Body|
+| `country` | `string` | **Required**. Make Country in Request Body|
+
+##### Delete Make
+
+```http
+  DELETE /makes/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
 
 #### Vehicle Routes
 
 ##### Create Vehicle
 
 ```http
-  POST /accounts/open-account
+  POST /vehicles
 ```
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `access_token`      | `string` | **Required**. Valid Access Token |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
 | `model` | `string` | **Required**. Model of the Vehicle in Request Body|
 | `category` | `string` | **Required**. Category of the Make in Request Body|
 
@@ -121,9 +208,41 @@ Some of the available routes are listed below:
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `access_token`      | `string` | **Required**. Valid Access Token |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
 
+##### Get Vehicle By ID
 
+```http
+  GET /vehicles/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
+
+##### Update Vehicle
+
+```http
+  PATCH /vehicles/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `model` | `string` | **Required**. Model of the Vehicle in Request Body|
+| `category` | `string` | **Required**. Category of the Make in Request Body|
+
+##### Delete Vehicle
+
+```http
+  DELETE /vehicles/{id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `id`      | `string` | **Required**. Valid UUID in Request Params|
 
 ## License
 

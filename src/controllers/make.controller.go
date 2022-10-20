@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
+	"github.com/greazleay/vehicle-api/src/exceptions"
 	"github.com/greazleay/vehicle-api/src/models"
 	"gorm.io/gorm"
 )
@@ -16,12 +18,7 @@ func CreateMake(context *gin.Context) {
 	body := dtos.CreateMakeDto{}
 
 	if err := context.BindJSON(&body); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -30,12 +27,7 @@ func CreateMake(context *gin.Context) {
 
 	if err := config.DB.First(&makeExists, "name = ?", body.Name).Error; err == nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"statusText": "failed",
-			"statusCode": 409,
-			"errorType":  "ConflictException",
-			"error":      "Make with name: " + body.Name + " already exists",
-		})
+		exceptions.HandleConflictException(context, "Make with name: "+body.Name+" already exists")
 		return
 	}
 
@@ -45,7 +37,7 @@ func CreateMake(context *gin.Context) {
 	result := config.DB.Create(&newMake)
 
 	if result.Error != nil {
-		context.Status(400)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 
@@ -76,12 +68,7 @@ func GetMakeByID(context *gin.Context) {
 	params := dtos.EntityID{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -90,12 +77,7 @@ func GetMakeByID(context *gin.Context) {
 		return db.Select("MakeID", "Model")
 	}).First(&make, "id = ?", params.ID).Error; err != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleNotFoundException(context, err)
 		return
 	}
 
@@ -113,12 +95,7 @@ func GetMakeByName(context *gin.Context) {
 	query := dtos.MakeNameDto{}
 
 	if err := context.BindQuery(&query); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -127,12 +104,7 @@ func GetMakeByName(context *gin.Context) {
 		return db.Select("MakeID", "Model")
 	}).First(&make, "name = ?", query.Name).Error; err != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleNotFoundException(context, err)
 		return
 	}
 
@@ -150,24 +122,13 @@ func GetMakesByCountry(context *gin.Context) {
 	query := dtos.MakeCountryDto{}
 
 	if err := context.BindQuery(&query); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	var makes []models.Make
 	if foundMakes := config.DB.Where("country = ?", query.Country).Find(&makes).RowsAffected; foundMakes == 0 {
-
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      "No Makes for specified Country",
-		})
+		exceptions.HandleNotFoundException(context, errors.New("no makes found for specified country"))
 		return
 	}
 
@@ -184,24 +145,14 @@ func UpdateMake(context *gin.Context) {
 	// Validate Request Params
 	params := dtos.EntityID{}
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	// Validate Request Body
 	body := dtos.CreateMakeDto{}
 	if err := context.BindJSON(&body); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
@@ -209,12 +160,7 @@ func UpdateMake(context *gin.Context) {
 	var makeExists models.Make
 	if err := config.DB.Where("name = ?", body.Name).Not("id = ?", params.ID).First(&makeExists).Error; err == nil {
 
-		context.AbortWithStatusJSON(http.StatusConflict, gin.H{
-			"statusText": "failed",
-			"statusCode": 409,
-			"errorType":  "ConflictException",
-			"error":      "Make with name: " + body.Name + " already exists",
-		})
+		exceptions.HandleConflictException(context, "Make with name: "+body.Name+" already exists")
 		return
 	}
 
@@ -223,12 +169,7 @@ func UpdateMake(context *gin.Context) {
 
 	if result.Error != nil {
 
-		context.AbortWithStatusJSON(http.StatusNotFound, gin.H{
-			"statusText": "failure",
-			"statusCode": 404,
-			"errorType":  "NotFoundException",
-			"error":      result.Error.Error(),
-		})
+		exceptions.HandleNotFoundException(context, result.Error)
 		return
 	}
 
@@ -248,19 +189,14 @@ func DeleteMake(context *gin.Context) {
 	params := dtos.EntityID{}
 
 	if err := context.BindUri(&params); err != nil {
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"statusText": "failure",
-			"statusCode": 400,
-			"errorType":  "ValidationException",
-			"error":      err.Error(),
-		})
+		exceptions.HandleValidationException(context, err)
 		return
 	}
 
 	result := config.DB.Delete(&models.Make{}, "id = ?", params.ID)
 
 	if result.Error != nil {
-		context.Status(400)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 
