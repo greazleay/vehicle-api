@@ -1,10 +1,12 @@
 package middlewares
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/greazleay/vehicle-api/src/exceptions"
 	"github.com/greazleay/vehicle-api/src/services/auth"
 )
 
@@ -14,13 +16,7 @@ func Auth() gin.HandlerFunc {
 
 		bearerToken := context.GetHeader("Authorization")
 		if bearerToken == "" {
-
-			context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"statusText": "failed",
-				"statusCode": 400,
-				"errorType":  "BadRequestException",
-				"error":      "Access Token is Required",
-			})
+			exceptions.HandleBadRequestException(context, errors.New("bearer token is required"))
 			return
 		}
 
