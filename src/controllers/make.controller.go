@@ -8,10 +8,24 @@ import (
 	"github.com/greazleay/vehicle-api/src/config"
 	"github.com/greazleay/vehicle-api/src/dtos"
 	"github.com/greazleay/vehicle-api/src/exceptions"
+	"github.com/greazleay/vehicle-api/src/helpers"
 	"github.com/greazleay/vehicle-api/src/models"
 	"gorm.io/gorm"
 )
 
+// CreateMake godoc
+// @Summary      creates a new make
+// @Description  create make
+// @Tags         Make
+// @Accept       json
+// @Produce      json
+// @Param 		 data	body	dtos.CreateMakeDto	true	"CreateMake JSON"
+// @Success      201  {object}  dtos.SuccessResponseDto
+// @Failure      400  {object}  dtos.FailedResponseDto
+// @Failure      409  {object}  dtos.FailedResponseDto
+// @Failure      500  {object}  dtos.FailedResponseDto
+// @Router       /makes [post]
+// @Security 	JWT
 func CreateMake(context *gin.Context) {
 
 	// Validate Request Body
@@ -37,31 +51,49 @@ func CreateMake(context *gin.Context) {
 	result := config.DB.Create(&newMake)
 
 	if result.Error != nil {
-		exceptions.HandleBadRequestException(context, result.Error)
+		exceptions.HandleInternalServerException(context)
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{
-		"statusText": "success",
-		"statusCode": 201,
-		"message":    "Make Created",
-		"data":       newMake,
-	})
+	helpers.HandleCreatedResponse(context, "Make Created", newMake)
 }
 
+// GetAllMakes godoc
+// @Summary      returns all makes
+// @Description  get makes
+// @Tags         Make
+// @Security 	JWT
+// @Accept       json
+// @Produce      json
+// @in header
+// @name Authorization
+// @success 200 {object} dtos.SuccessResponseDto{data=models.Make[]} "desc"
+// @Failure      500  {object}  dtos.FailedResponseDto
+// @Router       /makes [get]
 func GetAllMakes(context *gin.Context) {
 
-	var makes []models.Make
-	config.DB.Find(&makes)
+	var allMakes []models.Make
+	config.DB.Find(&allMakes)
 
-	context.JSON(http.StatusOK, gin.H{
-		"statusText": "success",
-		"statusCode": 200,
-		"message":    "All Makes",
-		"data":       makes,
-	})
+	helpers.HandleOkResponse(context, "All Makes", allMakes)
+
 }
 
+// GetMakeByID godoc
+// @Summary      returns a make by its 16 caharcter uuid
+// @Description  get make by ID
+// @Tags         Make
+// @Security 	JWT
+// @Accept       json
+// @Produce      json
+// @Param        id   path      int  true  "Make ID"
+// @in header
+// @name Authorization
+// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "desc"
+// @Failure      400  {object}  dtos.FailedResponseDto
+// @Failure      404  {object}  dtos.FailedResponseDto
+// @Failure      500  {object}  dtos.FailedResponseDto
+// @Router       /makes/{id} [get]
 func GetMakeByID(context *gin.Context) {
 
 	// Validate Request Params
@@ -89,6 +121,19 @@ func GetMakeByID(context *gin.Context) {
 	})
 }
 
+// GetMakeByName godoc
+// @Summary      returns a make by name
+// @Description  get make by name
+// @Tags         Make
+// @Security 	JWT
+// @Accept       json
+// @Produce      json
+// @Param        name   query      string  true  "make search by name"
+// @in header
+// @name Authorization
+// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "desc"
+// @Failure      500  {object}  dtos.FailedResponseDto
+// @Router       /makes/names [get]
 func GetMakeByName(context *gin.Context) {
 
 	// Validate Request Query

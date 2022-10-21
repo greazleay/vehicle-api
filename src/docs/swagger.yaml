@@ -1,0 +1,264 @@
+basePath: /v1
+definitions:
+  dtos.CreateMakeDto:
+    properties:
+      country:
+        type: string
+      name:
+        type: string
+    required:
+    - country
+    - name
+    type: object
+  dtos.FailedResponseDto:
+    properties:
+      error:
+        type: string
+      errorType:
+        type: string
+      statusCode:
+        type: integer
+      statusText:
+        type: string
+    type: object
+  dtos.LoginUserDto:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dtos.SuccessResponseDto:
+    properties:
+      data: {}
+      message:
+        type: string
+      statusCode:
+        type: integer
+      statusText:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Make:
+    properties:
+      country:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+      vehicles:
+        items:
+          $ref: '#/definitions/models.Vehicle'
+        type: array
+    type: object
+  models.Vehicle:
+    properties:
+      acceleration:
+        type: string
+      category:
+        type: string
+      createdAt:
+        type: string
+      cylinder:
+        type: integer
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      horsePower:
+        type: string
+      id:
+        type: string
+      imageUrl:
+        type: string
+      make:
+        $ref: '#/definitions/models.Make'
+      makeID:
+        type: string
+      model:
+        type: string
+      numberOfSeats:
+        type: integer
+      price:
+        type: integer
+      topSpeed:
+        type: string
+      torque:
+        type: string
+      transmission:
+        type: integer
+      updatedAt:
+        type: string
+      year:
+        type: integer
+    type: object
+host: api-vehicle.onrender.com
+info:
+  contact:
+    email: me@pollaroid.net
+    name: Lekan Adetunmbi
+    url: https://pollaroid.net
+  description: This is a simple CRUD API for managing vehicle information.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Vehicle API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login user
+      parameters:
+      - description: LoginUser JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.SuccessResponseDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - BasicAuth: []
+      summary: login user with valid email and password combination
+      tags:
+      - Auth
+  /makes:
+    get:
+      consumes:
+      - application/json
+      description: get makes
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: desc
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Make'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns all makes
+      tags:
+      - Make
+    post:
+      consumes:
+      - application/json
+      description: create make
+      parameters:
+      - description: CreateMake JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateMakeDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.SuccessResponseDto'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: creates a new make
+      tags:
+      - Make
+  /makes/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get make by ID
+      parameters:
+      - description: Make ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: desc
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Make'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns a make by its 16 caharcter uuid
+      tags:
+      - Make
+schemes:
+- http
+- https
+securityDefinitions:
+  BasicAuth:
+    type: basic
+  JWT:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

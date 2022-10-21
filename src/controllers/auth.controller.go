@@ -11,6 +11,19 @@ import (
 	"github.com/greazleay/vehicle-api/src/services/auth"
 )
 
+// LoginUser godoc
+// @Summary      login user with valid email and password combination
+// @Description  login user
+// @Tags         Auth
+// @Security  BasicAuth
+// @Accept       json
+// @Produce      json
+// @Param 		 data	body	dtos.LoginUserDto	true	"LoginUser JSON"
+// @Success      200  {object}  dtos.SuccessResponseDto
+// @Failure      400  {object}  dtos.FailedResponseDto
+// @Failure      404  {object}  dtos.FailedResponseDto
+// @Failure      500  {object}  dtos.FailedResponseDto
+// @Router       /auth/login [post]
 func LoginUser(context *gin.Context) {
 
 	// Validate Request Body
