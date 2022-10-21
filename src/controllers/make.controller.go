@@ -17,15 +17,16 @@ import (
 // @Summary      creates a new make
 // @Description  create make
 // @Tags         Make
+// @Security 	JWT
 // @Accept       json
 // @Produce      json
-// @Param 		 data	body	dtos.CreateMakeDto	true	"CreateMake JSON"
-// @Success      201  {object}  dtos.SuccessResponseDto
-// @Failure      400  {object}  dtos.FailedResponseDto
-// @Failure      409  {object}  dtos.FailedResponseDto
-// @Failure      500  {object}  dtos.FailedResponseDto
+// @Param 		 data	body	dtos.CreateMakeDto	true	"Make Details JSON"
+// @Success      201  {object}  dtos.SuccessResponseDto{data=models.Make}
+// @Failure      400  {object}  dtos.FailedResponseDto	"request body validation error or token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      409  {object}  dtos.FailedResponseDto	"make with the same name exists"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
 // @Router       /makes [post]
-// @Security 	JWT
 func CreateMake(context *gin.Context) {
 
 	// Validate Request Body
@@ -51,7 +52,7 @@ func CreateMake(context *gin.Context) {
 	result := config.DB.Create(&newMake)
 
 	if result.Error != nil {
-		exceptions.HandleInternalServerException(context)
+		exceptions.HandleBadRequestException(context, result.Error)
 		return
 	}
 
@@ -65,10 +66,10 @@ func CreateMake(context *gin.Context) {
 // @Security 	JWT
 // @Accept       json
 // @Produce      json
-// @in header
-// @name Authorization
-// @success 200 {object} dtos.SuccessResponseDto{data=models.Make[]} "desc"
-// @Failure      500  {object}  dtos.FailedResponseDto
+// @success 200 {object} dtos.SuccessResponseDto{data=[]models.Make} "all makes returned"
+// @Failure      400  {object}  dtos.FailedResponseDto	"token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
 // @Router       /makes [get]
 func GetAllMakes(context *gin.Context) {
 
@@ -86,13 +87,12 @@ func GetAllMakes(context *gin.Context) {
 // @Security 	JWT
 // @Accept       json
 // @Produce      json
-// @Param        id   path      int  true  "Make ID"
-// @in header
-// @name Authorization
-// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "desc"
-// @Failure      400  {object}  dtos.FailedResponseDto
-// @Failure      404  {object}  dtos.FailedResponseDto
-// @Failure      500  {object}  dtos.FailedResponseDto
+// @Param        id   path      string  true  "Make ID(UUID)"
+// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "make with the specified ID returned"
+// @Failure      400  {object}  dtos.FailedResponseDto	"request param validation error or token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      404  {object}  dtos.FailedResponseDto	"make with the specified ID not found"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
 // @Router       /makes/{id} [get]
 func GetMakeByID(context *gin.Context) {
 
@@ -129,10 +129,11 @@ func GetMakeByID(context *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        name   query      string  true  "make search by name"
-// @in header
-// @name Authorization
-// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "desc"
-// @Failure      500  {object}  dtos.FailedResponseDto
+// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "make with the search name returned"
+// @Failure      400  {object}  dtos.FailedResponseDto	"request query validation error or token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      404  {object}  dtos.FailedResponseDto	"no make with the search name found"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
 // @Router       /makes/names [get]
 func GetMakeByName(context *gin.Context) {
 
@@ -161,6 +162,20 @@ func GetMakeByName(context *gin.Context) {
 	})
 }
 
+// GetMakesByCountry godoc
+// @Summary      returns makes by country
+// @Description  get makes by country
+// @Tags         Make
+// @Security 	JWT
+// @Accept       json
+// @Produce      json
+// @Param        country   query      string  true  "make search by country"
+// @success 200 {object} dtos.SuccessResponseDto{data=[]models.Make} "desc"
+// @Failure      400  {object}  dtos.FailedResponseDto	"request query validation error or token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      404  {object}  dtos.FailedResponseDto	"no make with the search country found"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
+// @Router       /makes/countries [get]
 func GetMakesByCountry(context *gin.Context) {
 
 	// Validate Request Query
@@ -185,6 +200,22 @@ func GetMakesByCountry(context *gin.Context) {
 	})
 }
 
+// UpdateMake godoc
+// @Summary      updates a make
+// @Description  update make
+// @Tags         Make
+// @Security 	JWT
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Make ID(UUID)"
+// @Param 		 data	body	dtos.CreateMakeDto	true	"Make Details JSON"
+// @success 200 {object} dtos.SuccessResponseDto{data=models.Make} "make updated successfully"
+// @Failure      400  {object}  dtos.FailedResponseDto	"request body/param validation errors or token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      404  {object}  dtos.FailedResponseDto	"make with ID in request params not found"
+// @Failure      409  {object}  dtos.FailedResponseDto	"another make with the same name in request body exists"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
+// @Router       /makes/{id} [patch]
 func UpdateMake(context *gin.Context) {
 
 	// Validate Request Params
@@ -228,6 +259,20 @@ func UpdateMake(context *gin.Context) {
 	})
 }
 
+// DeleteMake godoc
+// @Summary      deletes a make
+// @Description  delete make
+// @Tags         Make
+// @Security 	JWT
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Make ID(UUID)"
+// @success 200 {object} dtos.SuccessResponseDto "make deleted successfully"
+// @Failure      400  {object}  dtos.FailedResponseDto	"request params validation error or token not passed with request"
+// @Failure      401  {object}  dtos.FailedResponseDto	"invalid/expired token"
+// @Failure      404  {object}  dtos.FailedResponseDto	"make with ID in request params not found"
+// @Failure      500  {object}  dtos.FailedResponseDto	"unexpected internal server error"
+// @Router       /makes/{id} [delete]
 func DeleteMake(context *gin.Context) {
 
 	// Validate Request Params

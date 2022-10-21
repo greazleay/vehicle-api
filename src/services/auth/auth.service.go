@@ -21,7 +21,7 @@ func GenerateJwt(userID uuid.UUID) (tokenString string, err error) {
 
 	// Create the Claims
 	claims := JwtClaims{
-		"someone@example.com",
+		"someone@example.com", // This value specified on puepose, to be changed later
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

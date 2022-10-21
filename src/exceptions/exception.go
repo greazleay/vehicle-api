@@ -42,12 +42,12 @@ func HandleNotFoundException(context *gin.Context, err error) {
 	})
 }
 
-func HandleUnauthorizedException(context *gin.Context) {
+func HandleUnauthorizedException(context *gin.Context, errText string) {
 	context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 		"statusText": "failed",
 		"statusCode": 401,
 		"errorType":  "UnauthorizedException",
-		"error":      "Invalid Credentials",
+		"error":      errText,
 	})
 }
 

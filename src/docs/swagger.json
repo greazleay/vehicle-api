@@ -42,7 +42,7 @@
                 "summary": "login user with valid email and password combination",
                 "parameters": [
                     {
-                        "description": "LoginUser JSON",
+                        "description": "User Login Credentials JSON",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -53,25 +53,25 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "login successful",
                         "schema": {
                             "$ref": "#/definitions/dtos.SuccessResponseDto"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "request body validation errors",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "invalid credentials",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "unexpected internal server error",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
@@ -99,7 +99,7 @@
                 "summary": "returns all makes",
                 "responses": {
                     "200": {
-                        "description": "desc",
+                        "description": "all makes returned",
                         "schema": {
                             "allOf": [
                                 {
@@ -109,15 +109,30 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.Make"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Make"
+                                            }
                                         }
                                     }
                                 }
                             ]
                         }
                     },
+                    "400": {
+                        "description": "token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "unexpected internal server error",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
@@ -143,7 +158,7 @@
                 "summary": "creates a new make",
                 "parameters": [
                     {
-                        "description": "CreateMake JSON",
+                        "description": "Make Details JSON",
                         "name": "data",
                         "in": "body",
                         "required": true,
@@ -156,23 +171,190 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dtos.SuccessResponseDto"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Make"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "request body validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "make with the same name exists",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/makes/countries": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get makes by country",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Make"
+                ],
+                "summary": "returns makes by country",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "make search by country",
+                        "name": "country",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "desc",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Make"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request query validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "no make with the search country found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/makes/names": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get make by name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Make"
+                ],
+                "summary": "returns a make by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "make search by name",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "make with the search name returned",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Make"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request query validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "no make with the search name found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
@@ -200,8 +382,349 @@
                 "summary": "returns a make by its 16 caharcter uuid",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Make ID",
+                        "type": "string",
+                        "description": "Make ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "make with the specified ID returned",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Make"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "make with the specified ID not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "delete make",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Make"
+                ],
+                "summary": "deletes a make",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Make ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "make deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.SuccessResponseDto"
+                        }
+                    },
+                    "400": {
+                        "description": "request params validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "make with ID in request params not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "update make",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Make"
+                ],
+                "summary": "updates a make",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Make ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Make Details JSON",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateMakeDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "make updated successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Make"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body/param validation errors or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "make with ID in request params not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "409": {
+                        "description": "another make with the same name in request body exists",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "returns all users",
+                "responses": {
+                    "200": {
+                        "description": "all users returned",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.User"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "registers a new user",
+                "parameters": [
+                    {
+                        "description": "New User Details JSON",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateUserDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "user created successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body validation error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "409": {
+                        "description": "another user with supplied email exists",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get user by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "returns a user by its 16 caharcter uuid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID(UUID)",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -219,15 +742,585 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.Make"
+                                            "$ref": "#/definitions/models.User"
                                         }
                                     }
                                 }
                             ]
                         }
                     },
+                    "400": {
+                        "description": "request param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "user with the specified ID not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "delete user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "deletes a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user deleted suuceesfully",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.SuccessResponseDto"
+                        }
+                    },
+                    "400": {
+                        "description": "request param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "update user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "updates a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User Details JSON",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateUserDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user updated successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body/param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "user with specified ID not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicles": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get vehicles",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vehicle"
+                ],
+                "summary": "returns all vehicles",
+                "responses": {
+                    "200": {
+                        "description": "all vehicles returned",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Vehicle"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "create vehicle",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vehicle"
+                ],
+                "summary": "creates a new vehicle",
+                "parameters": [
+                    {
+                        "description": "New Vehicle Details JSON",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateVehicleDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Vehicle"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "409": {
+                        "description": "another vehicle with the same model property exists",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicles/models": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get vehicle by model",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vehicle"
+                ],
+                "summary": "returns a vehicle by model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "vehcile search by model",
+                        "name": "model",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "vehicle with the search model returned",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Vehicle"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request query validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "no vehicle with the specified model found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/vehicles/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "get vehicle by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vehicle"
+                ],
+                "summary": "returns a vehicle by its 16 caharcter uuid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "vehicle with the specified ID returned",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Vehicle"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "vehicle with the specified ID not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "delete vehicle",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vehicle"
+                ],
+                "summary": "deletes a vehicle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "vehicle deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.SuccessResponseDto"
+                        }
+                    },
+                    "400": {
+                        "description": "request param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "update vehicle",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vehicle"
+                ],
+                "summary": "updates a vehicle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Vehicle ID(UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vehicle Details JSON",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.CreateVehicleDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "vehicle updated suucessfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dtos.SuccessResponseDto"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Vehicle"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body/param validation error or token not passed with request",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid/expired token",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "404": {
+                        "description": "vehicle with ID in request params not found",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "409": {
+                        "description": "another vehicle with model in request body exists",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.FailedResponseDto"
+                        }
+                    },
+                    "500": {
+                        "description": "unexpected internal server error",
                         "schema": {
                             "$ref": "#/definitions/dtos.FailedResponseDto"
                         }
@@ -249,6 +1342,89 @@
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "dtos.CreateUserDto": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "dtos.CreateVehicleDto": {
+            "type": "object",
+            "required": [
+                "acceleration",
+                "category",
+                "cylinder",
+                "horsePower",
+                "imageUrl",
+                "makeId",
+                "model",
+                "numberOfSeats",
+                "price",
+                "topSpeed",
+                "torque",
+                "transmission",
+                "year"
+            ],
+            "properties": {
+                "acceleration": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "cylinder": {
+                    "type": "integer"
+                },
+                "horsePower": {
+                    "type": "string"
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "makeId": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "numberOfSeats": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "topSpeed": {
+                    "type": "string"
+                },
+                "torque": {
+                    "type": "string"
+                },
+                "transmission": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
                 }
             }
         },
@@ -300,6 +1476,21 @@
                 }
             }
         },
+        "dtos.UpdateUserDto": {
+            "type": "object",
+            "required": [
+                "firstName",
+                "lastName"
+            ],
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                }
+            }
+        },
         "gorm.DeletedAt": {
             "type": "object",
             "properties": {
@@ -338,6 +1529,38 @@
                     "items": {
                         "$ref": "#/definitions/models.Vehicle"
                     }
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastLogin": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },

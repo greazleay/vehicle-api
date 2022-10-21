@@ -25,7 +25,7 @@ $ go run src/main.go
 
 ## Documentation
 
-Full API Documentation is available [here](https://api-vehicle.onrender.com/api-docs)
+Full API Documentation is available [here](https://api-vehicle.onrender.com/api-docs/index.html)
 
 ## API Reference
 
@@ -198,7 +198,17 @@ Some of the available routes are listed below:
 | :-------- | :------- | :-------------------------------- |
 | `bearer_token`      | `string` | **Required**. Valid Bearer Token |
 | `model` | `string` | **Required**. Model of the Vehicle in Request Body|
-| `category` | `string` | **Required**. Category of the Make in Request Body|
+| `category` | `string` | **Required**. Category of the Vehicle in Request Body|
+| `year` | `int` | **Required**. Year of the Vehicle in Request Body|
+| `imageUrl` | `string` | **Required**. Image Url of the Vehicle in Request Body|
+| `numberOfSeats` | `string` | **Required**. Number of Seats of the Vehicle in Request Body|
+| `price` | `int` | **Required**. Price of the Vehicle in Request Body|
+| `cylinder` | `string` | **Required**. Number of Cylinders of the Vehicle in Request Body|
+| `horsePower` | `string` | **Required**. Power of the Vehicle in Request Body|
+| `torque` | `string` | **Required**. Torque of the Vehicle in Request Body|
+| `topSpeed` | `string` | **Required**. Top Speed of the Vehicle in Request Body|
+| `acceleration` | `string` | **Required**. Acceleration of the Vehicle in Request Body|
+| `transmission` | `int` | **Required**. Number of Gears of the Vehicle in Request Body|
 
 ##### Get All Vehicles
 
@@ -221,6 +231,17 @@ Some of the available routes are listed below:
 | `bearer_token`      | `string` | **Required**. Valid Bearer Token |
 | `id`      | `string` | **Required**. Valid UUID in Request Params|
 
+##### Get Vehicle By Model
+
+```http
+  GET /vehicles/models?model={model}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `bearer_token`      | `string` | **Required**. Valid Bearer Token |
+| `model`      | `string` | **Required**. Vehicle Model in Request Query|
+
 ##### Update Vehicle
 
 ```http
@@ -231,7 +252,17 @@ Some of the available routes are listed below:
 | :-------- | :------- | :-------------------------------- |
 | `bearer_token`      | `string` | **Required**. Valid Bearer Token |
 | `model` | `string` | **Required**. Model of the Vehicle in Request Body|
-| `category` | `string` | **Required**. Category of the Make in Request Body|
+| `category` | `string` | **Required**. Category of the Vehicle in Request Body|
+| `year` | `int` | **Required**. Year of the Vehicle in Request Body|
+| `imageUrl` | `string` | **Required**. Image Url of the Vehicle in Request Body|
+| `numberOfSeats` | `string` | **Required**. Number of Seats of the Vehicle in Request Body|
+| `price` | `int` | **Required**. Price of the Vehicle in Request Body|
+| `cylinder` | `string` | **Required**. Number of Cylinders of the Vehicle in Request Body|
+| `horsePower` | `string` | **Required**. Power of the Vehicle in Request Body|
+| `torque` | `string` | **Required**. Torque of the Vehicle in Request Body|
+| `topSpeed` | `string` | **Required**. Top Speed of the Vehicle in Request Body|
+| `acceleration` | `string` | **Required**. Acceleration of the Vehicle in Request Body|
+| `transmission` | `int` | **Required**. Number of Gears of the Vehicle in Request Body|
 
 ##### Delete Vehicle
 

@@ -10,6 +10,66 @@ definitions:
     - country
     - name
     type: object
+  dtos.CreateUserDto:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - password
+    type: object
+  dtos.CreateVehicleDto:
+    properties:
+      acceleration:
+        type: string
+      category:
+        type: string
+      cylinder:
+        type: integer
+      horsePower:
+        type: string
+      imageUrl:
+        type: string
+      makeId:
+        type: string
+      model:
+        type: string
+      numberOfSeats:
+        type: integer
+      price:
+        type: integer
+      topSpeed:
+        type: string
+      torque:
+        type: string
+      transmission:
+        type: integer
+      year:
+        type: integer
+    required:
+    - acceleration
+    - category
+    - cylinder
+    - horsePower
+    - imageUrl
+    - makeId
+    - model
+    - numberOfSeats
+    - price
+    - topSpeed
+    - torque
+    - transmission
+    - year
+    type: object
   dtos.FailedResponseDto:
     properties:
       error:
@@ -42,6 +102,16 @@ definitions:
       statusText:
         type: string
     type: object
+  dtos.UpdateUserDto:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+    required:
+    - firstName
+    - lastName
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -68,6 +138,27 @@ definitions:
         items:
           $ref: '#/definitions/models.Vehicle'
         type: array
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: string
+      lastLogin:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+      updatedAt:
+        type: string
     type: object
   models.Vehicle:
     properties:
@@ -128,7 +219,7 @@ paths:
       - application/json
       description: login user
       parameters:
-      - description: LoginUser JSON
+      - description: User Login Credentials JSON
         in: body
         name: data
         required: true
@@ -138,19 +229,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: login successful
           schema:
             $ref: '#/definitions/dtos.SuccessResponseDto'
         "400":
-          description: Bad Request
+          description: request body validation errors
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
-        "404":
-          description: Not Found
+        "401":
+          description: invalid credentials
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
         "500":
-          description: Internal Server Error
+          description: unexpected internal server error
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
       security:
@@ -167,16 +258,26 @@ paths:
       - application/json
       responses:
         "200":
-          description: desc
+          description: all makes returned
           schema:
             allOf:
             - $ref: '#/definitions/dtos.SuccessResponseDto'
             - properties:
                 data:
-                  $ref: '#/definitions/models.Make'
+                  items:
+                    $ref: '#/definitions/models.Make'
+                  type: array
               type: object
+        "400":
+          description: token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
         "500":
-          description: Internal Server Error
+          description: unexpected internal server error
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
       security:
@@ -189,7 +290,7 @@ paths:
       - application/json
       description: create make
       parameters:
-      - description: CreateMake JSON
+      - description: Make Details JSON
         in: body
         name: data
         required: true
@@ -201,17 +302,26 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dtos.SuccessResponseDto'
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Make'
+              type: object
         "400":
-          description: Bad Request
+          description: request body validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
         "409":
-          description: Conflict
+          description: make with the same name exists
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
         "500":
-          description: Internal Server Error
+          description: unexpected internal server error
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
       security:
@@ -220,16 +330,152 @@ paths:
       tags:
       - Make
   /makes/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete make
+      parameters:
+      - description: Make ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: make deleted successfully
+          schema:
+            $ref: '#/definitions/dtos.SuccessResponseDto'
+        "400":
+          description: request params validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: make with ID in request params not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: deletes a make
+      tags:
+      - Make
     get:
       consumes:
       - application/json
       description: get make by ID
       parameters:
-      - description: Make ID
+      - description: Make ID(UUID)
         in: path
         name: id
         required: true
-        type: integer
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: make with the specified ID returned
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Make'
+              type: object
+        "400":
+          description: request param validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: make with the specified ID not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns a make by its 16 caharcter uuid
+      tags:
+      - Make
+    patch:
+      consumes:
+      - application/json
+      description: update make
+      parameters:
+      - description: Make ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Make Details JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateMakeDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: make updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Make'
+              type: object
+        "400":
+          description: request body/param validation errors or token not passed with
+            request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: make with ID in request params not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "409":
+          description: another make with the same name in request body exists
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: updates a make
+      tags:
+      - Make
+  /makes/countries:
+    get:
+      consumes:
+      - application/json
+      description: get makes by country
+      parameters:
+      - description: make search by country
+        in: query
+        name: country
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -240,17 +486,533 @@ paths:
             - $ref: '#/definitions/dtos.SuccessResponseDto'
             - properties:
                 data:
-                  $ref: '#/definitions/models.Make'
+                  items:
+                    $ref: '#/definitions/models.Make'
+                  type: array
               type: object
+        "400":
+          description: request query validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: no make with the search country found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
         "500":
-          description: Internal Server Error
+          description: unexpected internal server error
           schema:
             $ref: '#/definitions/dtos.FailedResponseDto'
       security:
       - JWT: []
-      summary: returns a make by its 16 caharcter uuid
+      summary: returns makes by country
       tags:
       - Make
+  /makes/names:
+    get:
+      consumes:
+      - application/json
+      description: get make by name
+      parameters:
+      - description: make search by name
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: make with the search name returned
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Make'
+              type: object
+        "400":
+          description: request query validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: no make with the search name found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns a make by name
+      tags:
+      - Make
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: all users returned
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.User'
+                  type: array
+              type: object
+        "400":
+          description: token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns all users
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: create user
+      parameters:
+      - description: New User Details JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateUserDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: user created successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: request body validation error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "409":
+          description: another user with supplied email exists
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      summary: registers a new user
+      tags:
+      - User
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete user
+      parameters:
+      - description: User ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user deleted suuceesfully
+          schema:
+            $ref: '#/definitions/dtos.SuccessResponseDto'
+        "400":
+          description: request param validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: deletes a user
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: get user by ID
+      parameters:
+      - description: User ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: desc
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: request param validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: user with the specified ID not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns a user by its 16 caharcter uuid
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: update user
+      parameters:
+      - description: User ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User Details JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateUserDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: request body/param validation error or token not passed with
+            request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: user with specified ID not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: updates a user
+      tags:
+      - User
+  /vehicles:
+    get:
+      consumes:
+      - application/json
+      description: get vehicles
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: all vehicles returned
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Vehicle'
+                  type: array
+              type: object
+        "400":
+          description: token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns all vehicles
+      tags:
+      - Vehicle
+    post:
+      consumes:
+      - application/json
+      description: create vehicle
+      parameters:
+      - description: New Vehicle Details JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateVehicleDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Vehicle'
+              type: object
+        "400":
+          description: request body validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "409":
+          description: another vehicle with the same model property exists
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: creates a new vehicle
+      tags:
+      - Vehicle
+  /vehicles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete vehicle
+      parameters:
+      - description: Vehicle ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: vehicle deleted successfully
+          schema:
+            $ref: '#/definitions/dtos.SuccessResponseDto'
+        "400":
+          description: request param validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: deletes a vehicle
+      tags:
+      - Vehicle
+    get:
+      consumes:
+      - application/json
+      description: get vehicle by ID
+      parameters:
+      - description: Vehicle ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: vehicle with the specified ID returned
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Vehicle'
+              type: object
+        "400":
+          description: request param validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: vehicle with the specified ID not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns a vehicle by its 16 caharcter uuid
+      tags:
+      - Vehicle
+    patch:
+      consumes:
+      - application/json
+      description: update vehicle
+      parameters:
+      - description: Vehicle ID(UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Vehicle Details JSON
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateVehicleDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: vehicle updated suucessfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Vehicle'
+              type: object
+        "400":
+          description: request body/param validation error or token not passed with
+            request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: vehicle with ID in request params not found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "409":
+          description: another vehicle with model in request body exists
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: updates a vehicle
+      tags:
+      - Vehicle
+  /vehicles/models:
+    get:
+      consumes:
+      - application/json
+      description: get vehicle by model
+      parameters:
+      - description: vehcile search by model
+        in: query
+        name: model
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: vehicle with the search model returned
+          schema:
+            allOf:
+            - $ref: '#/definitions/dtos.SuccessResponseDto'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Vehicle'
+              type: object
+        "400":
+          description: request query validation error or token not passed with request
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "401":
+          description: invalid/expired token
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "404":
+          description: no vehicle with the specified model found
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+        "500":
+          description: unexpected internal server error
+          schema:
+            $ref: '#/definitions/dtos.FailedResponseDto'
+      security:
+      - JWT: []
+      summary: returns a vehicle by model
+      tags:
+      - Vehicle
 schemes:
 - http
 - https

@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"errors"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,12 +23,7 @@ func Auth() gin.HandlerFunc {
 		err := auth.ValidateToken(accessToken)
 		if err != nil {
 
-			context.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"statusText": "failed",
-				"statusCode": 401,
-				"errorType":  "UnauthorizedException",
-				"error":      "Unauthorized",
-			})
+			exceptions.HandleUnauthorizedException(context, "Unauthorized")
 			return
 		}
 		context.Next()
