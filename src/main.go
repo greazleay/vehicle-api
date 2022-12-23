@@ -20,8 +20,8 @@ func init() {
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   Lekan Adetunmbi
-// @contact.url    https://pollaroid.net
-// @contact.email  me@pollaroid.net
+// @contact.url    https://qxz.netlify.app
+// @contact.email  lothbroch@gmail.com
 
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
